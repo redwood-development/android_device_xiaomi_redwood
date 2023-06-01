@@ -7,17 +7,17 @@
 
 function blob_fixup() {
     case "${1}" in
-        vendor/etc/camera/pureShot_parameter.xml)
-            sed -i 's/=\([0-9]\+\)>/="\1">/g' "${2}"
-            ;;
-        vendor/lib64/hw/camera.qcom.so)
-            sed -i "s/\x73\x74\x5F\x6C\x69\x63\x65\x6E\x73\x65\x2E\x6C\x69\x63/\x63\x61\x6D\x65\x72\x61\x5F\x63\x6E\x66\x2E\x74\x78\x74/g" "${2}"
+        vendor/etc/camera/pure*_parameter.xml)
+            sed -i "s/=\([0-9]\+\)>/=\"\1\">/g" "${2}"
             ;;
         vendor/lib64/hw/camera.xiaomi.so)
-            "${SIGSCAN}" -p "5e 07 00 94" -P "1F 20 03 D5" -f "${2}"
-            ;;
-        vendor/lib64/vendor.xiaomi.hardware.cameraperf@1.0-impl.so)
-            "${SIGSCAN}" -p "21 00 80 52 7c 00 00 94" -P "21 00 80 52 1F 20 03 D5" -f "${2}"
+            # Before
+            # 21 00 80 52     mov        w1,#0x1
+            # 29 07 00 94     bl         <EXTERNAL>::android::hardware::configureRpcThr
+            # After
+            # 21 00 80 52     mov        w1,#0x1
+            # 1f 20 03 d5     nop
+            sed -i "s/\x21\x00\x80\x52\x29\x07\x00\x94/\x21\x00\x80\x52\x1f\x20\x03\xd5/g" "${2}"
             ;;
     esac
 }
@@ -31,7 +31,7 @@ fi
 set -e
 
 # Required!
-export DEVICE=renoir
+export DEVICE=redwood
 export DEVICE_COMMON=sm8350-common
 export VENDOR=xiaomi
 
